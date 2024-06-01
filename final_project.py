@@ -3,6 +3,8 @@ from openai import OpenAI
 import os
 import warnings
 import streamlit as st
+from streamlit_chat import message
+
 import re
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,24 +31,60 @@ if df is None:
 
 
 st.title("비타민 자소서 분석기")
-api=st.text_input('API-KEY를 입력하세요')
+st.subheader("API-KEY를 입력하세요.")
+api=st.text_input('',type='password')
+if not api:
+    st.stop()
 os.environ["OPENAI_API_KEY"] = api
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
+st.divider()
+
+st.subheader("비교하고 싶은 기수를 선택하세요.")
+
 available_classes = df['기수'].unique()
 available_classes_withall = ['전체']+list(available_classes)
-selected_class = st.selectbox('비교하고 싶은 기수를 선택하세요:', available_classes_withall)
+selected_class = st.selectbox('',available_classes_withall,index=None,placeholder='기수를 선택헤주세요.')
+if not selected_class:
+    st.stop()
 
+st.divider()
 
-user_text_1 = st.text_area("지원 동기를 포함하여 자신을 자유롭게 소개해 주세요.", height=150)
+st.subheader("질문에 맞춰 답변을 작성해 주세요.")
+message("지원 동기를 포함하여 자신을 자유롭게 소개해 주세요.")
+with st.container():
+    user_text_1 = st.text_input("User Input:",key="user_input1", max_chars=700)
+    if not user_text_1:
+        st.stop()
+    message(user_text_1,is_user=True,key="user_output1")
 
-user_text_2 = st.text_area("통계 관련 이수 교과명과 학습 내용을 적어주세요.", height=150)
+message("통계 관련 이수 교과명과 학습 내용을 적어주세요.")
+with st.container():
+    user_text_2 = st.text_input("User Input:",key="user_input2", max_chars=700)
+    if not user_text_2:
+        st.stop()
+    message(user_text_2,is_user=True,key="user_output2")
 
-user_text_3 = st.text_area("기초통계 외에 R, Python, SPSS, SQL 등의 언어나 머신러닝, 딥러닝, 데이터마이닝, 선형대수학 등에 대한 이론 / 실습 관련하여 학습하신 내용에 대해 적어주세요.", height=150)
+message("기초통계 외에 R, Python, SPSS, SQL 등의 언어나 머신러닝, 딥러닝, 데이터마이닝, 선형대수학 등에 대한 이론 / 실습 관련하여 학습하신 내용에 대해 적어주세요.")
+with st.container():
+    user_text_3 = st.text_input("User Input:",key="user_input3", max_chars=700)
+    if not user_text_3:
+        st.stop()
+    message(user_text_3,is_user=True,key="user_output3")
 
-user_text_4 = st.text_area("데이터 분석과 인공지능을 통해 해결하고 싶은 문제가 있다면 무엇인지 구체적으로 기술해주세요. (어떤 데이터셋을 가지고 무엇을 분석해보고 싶다는 내용도 함께 명시해주세요) 되도록 이에 대한 답을 해주시되, 이 질문이 너무 어려우면 동아리에 들어와 하고 싶은 활동, 가장 기대하는 바 등에 대해 적어주세요.", height=150)
+message("데이터 분석과 인공지능을 통해 해결하고 싶은 문제가 있다면 무엇인지 구체적으로 기술해주세요. (어떤 데이터셋을 가지고 무엇을 분석해보고 싶다는 내용도 함께 명시해주세요) 되도록 이에 대한 답을 해주시되, 이 질문이 너무 어려우면 동아리에 들어와 하고 싶은 활동, 가장 기대하는 바 등에 대해 적어주세요.")
+with st.container():
+    user_text_4 = st.text_input("User Input:",key="user_input4", max_chars=700)
+    if not user_text_4:
+        st.stop()
+    message(user_text_4,is_user=True,key="user_output4")
 
-user_text_5 = st.text_area("대학 재학 중 기억에 남는 활동에 대한 소개와 함께 활동 중 발생했던 문제를 어떻게 해결하였는지 구체적으로 말씀해주세요.", height=150)
+message("대학 재학 중 기억에 남는 활동에 대한 소개와 함께 활동 중 발생했던 문제를 어떻게 해결하였는지 구체적으로 말씀해주세요.")
+with st.container():
+    user_text_5 = st.text_input("User Input:",key="user_input5", max_chars=700)
+    if not user_text_5:
+        st.stop()
+    message(user_text_5,is_user=True,key="user_output5")
 
 
 def plot_capabilities(df, personal_df, selected_class):
@@ -58,7 +96,9 @@ def plot_capabilities(df, personal_df, selected_class):
     task_score = ['해결하고싶은과제점수']
     
     df_selected = df.groupby('기수')[soft_skills + hard_skills + task_score].mean().reset_index()
-    
+
+
+
     if selected_class == '전체':
         avg_soft_scores = df[soft_skills].mean()
         avg_hard_scores = df[hard_skills].mean()
@@ -73,33 +113,35 @@ def plot_capabilities(df, personal_df, selected_class):
     personal_hard_scores = personal_df[hard_skills].iloc[0]
     personal_task_score = personal_df[task_score].iloc[0]
 
-    # Bar Chart for Soft Skills
-    fig1 = go.Figure(data=[
-        go.Bar(name=f'{selected_class}기수 합격자의 평균 역량', x=soft_skills, y=avg_soft_scores, marker_color='blue'),
-        go.Bar(name='당신의 점수', x=soft_skills, y=personal_soft_scores, marker_color='red')
-    ])
-    fig1.update_layout(barmode='group', title='당신의 soft skill graph')
+    tap1,tap2,tap3 = st.tabs(['Soft Skills','Hard Skills','Task Score'])
 
-    # Bar Chart for Hard Skills
-    hard_skills_categories = hard_skills
-    fig2 = go.Figure(data=[
-        go.Bar(name=f'{selected_class}기수 합격자의 평균 역량', x=hard_skills_categories, y=avg_hard_scores, marker_color='blue'),
-        go.Bar(name='당신의 점수', x=hard_skills_categories, y=personal_hard_scores, marker_color='red')
-    ])
-    fig2.update_layout(barmode='group', title='당신의 hard skill graph')
+    with tap1:
+        # Bar Chart for Soft Skills
+        fig1 = go.Figure(data=[
+            go.Bar(name=f'{selected_class}기수 합격자의 평균 역량', x=soft_skills, y=avg_soft_scores, marker_color='blue'),
+            go.Bar(name='당신의 점수', x=soft_skills, y=personal_soft_scores, marker_color='red')
+        ])
+        fig1.update_layout(barmode='group', title='당신의 soft skill graph')
+        st.plotly_chart(fig1)
 
-    # Bar Chart for Task Score
-    fig3 = go.Figure(data=[
-        go.Bar(name=f'{selected_class}기수 합격자의 평균 역량', x=task_score, y=avg_task_score, marker_color='blue'),
-        go.Bar(name='당신의 점수', x=task_score, y=personal_task_score, marker_color='red')
-    ])
-    fig3.update_layout(barmode='group', title='해결하고 싶은 과제의 점수')
+    with tap2:
+        # Bar Chart for Hard Skills
+        hard_skills_categories = hard_skills
+        fig2 = go.Figure(data=[
+            go.Bar(name=f'{selected_class}기수 합격자의 평균 역량', x=hard_skills_categories, y=avg_hard_scores, marker_color='blue'),
+            go.Bar(name='당신의 점수', x=hard_skills_categories, y=personal_hard_scores, marker_color='red')
+        ])
+        fig2.update_layout(barmode='group', title='당신의 hard skill graph')
+        st.plotly_chart(fig2)
 
-    # Displaying with Streamlit
-    st.plotly_chart(fig1)
-    st.plotly_chart(fig2)
-    st.plotly_chart(fig3)
-
+    with tap3:
+        # Bar Chart for Task Score
+        fig3 = go.Figure(data=[
+            go.Bar(name=f'{selected_class}기수 합격자의 평균 역량', x=task_score, y=avg_task_score, marker_color='blue'),
+            go.Bar(name='당신의 점수', x=task_score, y=personal_task_score, marker_color='red')
+        ])
+        fig3.update_layout(barmode='group', title='해결하고 싶은 과제의 점수')
+        st.plotly_chart(fig3)
 
 def soft_skill_generate(user_text_1,user_text_5):
     text = user_text_1 + user_text_5
@@ -357,12 +399,12 @@ def recommend_based_on_average(candidate_scores, average_scores, top_n=3):
 def load_model_and_recommend(candidate_id,your_df):
     # 모델과 피처 중요도 데이터 불러오기
     model_path = 'model'
-    predictor = TabularPredictor.load('AutogluonModels/ag-20240601_165334',require_py_version_match=False)
-    importance_df = pd.read_csv('AutogluonModels/ag-20240601_165334/feature_importances.csv')
+    predictor = TabularPredictor.load('/Users/seoeunseo/Desktop/BITAmin/NLP/AutogluonModels/ag-20240601_165334')
+    importance_df = pd.read_csv('/Users/seoeunseo/Desktop/BITAmin/NLP/AutogluonModels/ag-20240601_165334/feature_importances.csv')
 
     # 데이터 불러오기 및 id 열 붙이기
-    file_path = 'Bitamin_HR/'
-    data = pd.read_csv('AutogluonModels/preprocessed_df.csv')
+    file_path = '/content/drive/MyDrive/Colab Notebooks/Taeho/Bitamin_HR/'
+    data = pd.read_csv('/Users/seoeunseo/Desktop/BITAmin/NLP/AutogluonModels/preprocessed_df.csv')
     data = pd.concat([data, your_df])
 
     # 지정된 id를 가진 후보자 데이터 선택
@@ -381,26 +423,32 @@ def load_model_and_recommend(candidate_id,your_df):
         'Score': candidate_data.iloc[0, :-1].values  # 'result'와 'pass_probability'를 제외한 모든 점수
     }), importance_df)
 
-    print("합격 확률:", candidate_data['pass_probability'].iloc[0])
-    print("\n피처별 중요도 기반 추천 역량:")
-    print(recommendations)
+    col1, col2, col3 = st.columns([1, 1, 1])
 
-    st.write("합격 확률:", candidate_data['pass_probability'].iloc[0])
-    st.write("\n피처별 중요도 기반 추천 역량:")
-    st.write(recommendations)
+    with col1:
+        if your_df.iloc[:,1:].sum().sum() == 0:
+            st.write("**합격 확률:** ",0,'%')
+        else:
+            st.write("**합격 확률:** ", round(candidate_data['pass_probability'].iloc[0],2),'%')
 
-    # 합격자 데이터 선택 및 평균 점수 계산
-    passers = data[data['result'] == 1]
-    average_scores = passers.drop(['result', 'id'], axis=1).mean()
+    with col2:
+        recommendations = recommendations.reset_index(drop=True)
+        st.write("\n**피처별 중요도 기반 추천 역량:**",'\n')
+        for i in range(3):
+            st.write(recommendations['Feature'][i],'→', 'Score: ', recommendations['Score'][i],'\n')
 
-    # 합격자 평균과 지원자 점수 비교하여 추천
-    recommendations_avg = recommend_based_on_average(candidate_data.drop(['result', 'pass_probability'], axis=1).iloc[0], average_scores)
+    with col3:
+        # 합격자 데이터 선택 및 평균 점수 계산
+        passers = data[data['result'] == 1]
+        average_scores = passers.drop(['result', 'id'], axis=1).mean()
 
-    print("\n합격자 역량별 평균 점수 기반 추천 역량:")
-    print(recommendations_avg)
-    st.write("\n합격자 역량별 평균 점수 기반 추천 역량:")
-    st.write(recommendations_avg)
+        # 합격자 평균과 지원자 점수 비교하여 추천
+        recommendations_avg = recommend_based_on_average(candidate_data.drop(['result', 'pass_probability'], axis=1).iloc[0], average_scores)
 
+        st.write("\n**합격자 역량별 평균 점수 기반 추천 역량:**",'\n')
+        recommendations_avg = recommendations_avg.reset_index()
+        for i in range(3):
+            st.write(recommendations_avg.iloc[i, 0],' : ', recommendations_avg.iloc[i, 1], '\n')
 
 # # 유저 ID를 입력으로 받음
 # candidate_id_input = 12  # 예시 ID
@@ -416,11 +464,14 @@ if st.button("Analyze"):
             your_df = pd.concat([soft_df, hard_df, Q4_df], axis=1)
             your_df.insert(0, 'id', len(df)+1)
             candidate_id_input = your_df.iloc[:,0:1]
-            st.success("Analysis Complete!")
-            st.write('당신의 skill')
-            st.dataframe(your_df)
+
+            st.divider()
+
+            st.subheader('당신의 skill')
+            st.dataframe(your_df.iloc[:,1:])
             plot_capabilities(df, your_df, selected_class)
-            st.write('지원자가 더하면 좋을 추천 역량')
+
+            st.subheader('지원자가 더하면 좋을 추천 역량')
             load_model_and_recommend(len(df)+1,your_df)
     else:
         st.error("Please input text in all fields.")
