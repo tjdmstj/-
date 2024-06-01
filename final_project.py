@@ -357,12 +357,12 @@ def recommend_based_on_average(candidate_scores, average_scores, top_n=3):
 def load_model_and_recommend(candidate_id,your_df):
     # 모델과 피처 중요도 데이터 불러오기
     model_path = 'model'
-    predictor = TabularPredictor.load('/Users/seoeunseo/Desktop/BITAmin/NLP/AutogluonModels/ag-20240601_165334')
-    importance_df = pd.read_csv('/Users/seoeunseo/Desktop/BITAmin/NLP/AutogluonModels/ag-20240601_165334/feature_importances.csv')
+    predictor = TabularPredictor.load('AutogluonModels/ag-20240601_165334')
+    importance_df = pd.read_csv('AutogluonModels/ag-20240601_165334/feature_importances.csv')
 
     # 데이터 불러오기 및 id 열 붙이기
-    file_path = '/content/drive/MyDrive/Colab Notebooks/Taeho/Bitamin_HR/'
-    data = pd.read_csv('/Users/seoeunseo/Desktop/BITAmin/NLP/AutogluonModels/preprocessed_df.csv')
+    file_path = 'Bitamin_HR/'
+    data = pd.read_csv('AutogluonModels/preprocessed_df.csv')
     data = pd.concat([data, your_df])
 
     # 지정된 id를 가진 후보자 데이터 선택
