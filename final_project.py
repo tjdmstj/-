@@ -357,7 +357,7 @@ def recommend_based_on_average(candidate_scores, average_scores, top_n=3):
 def load_model_and_recommend(candidate_id,your_df):
     # 모델과 피처 중요도 데이터 불러오기
     model_path = 'model'
-    predictor = TabularPredictor.load('AutogluonModels/ag-20240601_165334')
+    predictor = TabularPredictor.load('AutogluonModels/ag-20240601_165334',require_py_version_match=False)
     importance_df = pd.read_csv('AutogluonModels/ag-20240601_165334/feature_importances.csv')
 
     # 데이터 불러오기 및 id 열 붙이기
